@@ -14,16 +14,40 @@ Starsector Nano是一个使用C语言和EasyX图形库开发的2D太空战斗游
 while(!game_exit){
     deltaTime = DeltaTime_Get();
     
-    // 输入处理
-    Camera_HandleMouseMessage(&camera, &msg, deltaTime);
+    // 获取玩家位置
+    position = player->entity_data.position;
     
-    // 游戏状态更新
+    // 更新摄像机位置
+    Camera_HandleMouseMessage(&camera, &msg, deltaTime);
+    RenderManager_UpdateCameraScreenPosition(&camera);
+    
+    // 对象池更新
     ShipPool_Update(&rsm, &rdm, &explosionSeqPool, ship_pool, &camera, deltaTime);
     BulletPool_Update(bullet_pool, &rdm, deltaTime);
     ExplosionPool_UpdateMT(explosion_pool, deltaTime);
+    CombatDataPool_Update(combat_data_pool, ship_pool);
     
-    // 碰撞检测（在ShipPool_Update内部处理）
-    // 渲染（在各Update函数中调用）
+    // 更新序列爆炸
+    for (int i = 0; i < MAX_SEQUENCED_EXPLOSIONS; i++) {
+        if (explosionSeqPool.inUse[i] && explosionSeqPool.sequences[i].isActive) {
+            ExplosionSequence_Update(&explosionSeqPool.sequences[i], explosion_pool, &rsm, &rdm, deltaTime);
+            
+            // 如果序列播放完毕，释放回对象池
+            if (!explosionSeqPool.sequences[i].isActive) {
+                SequencedExplosionPool_Release(&explosionSeqPool, &explosionSeqPool.sequences[i]);
+            }
+        }
+    }
+    
+    // 更新所有AI飞船
+    for (int i = 0; i < MAX_SHIPS; i++) {
+        if (ship_pool->inUse[i] && !ship_pool->ships[i]->isPlayer) {
+            FSM_Update(ship_pool->ships[i], &aiCtx, combat_data_pool, &fsmRes);
+        }
+    }
+    
+    // 键盘控制检测和渲染
+    // ...
 }
 ```
 
@@ -86,21 +110,22 @@ RUI_RingProbe,ship,800,400,220.0,200.0,150.0,150.0
 // include/Entity.h
 typedef struct {
     IMAGE image;
-    HitPolygon* polygon;
-    Vector2f position;
-    Vector2f velocity;
-    Vector2f image_center_offset;
-    float rotational_velocity;
-    float moment_of_inertia;
-    float acceleration;
-    float rotational_acceleration;
-    float angle;
-    int hitpoint;
-    float mass;
-    int id;
-    Vector2f* transformed_vertices;
-    const char* id_name;
-    LightController light_controller;
+    IMAGE image_with_light;          // 带光效的图像
+    HitPolygon* polygon;             // JSON读取的碰撞多边形
+    Vector2f position;               // 实时更新的位置
+    Vector2f velocity;               // 实时更新的速度
+    Vector2f image_center_offset;    // CSV读取的图像中心偏移
+    float rotational_velocity;       // 实时更新的角速度
+    float moment_of_inertia;         // 转动惯量
+    float acceleration;              // CSV读取的加速度
+    float rotational_acceleration;   // CSV读取的旋转加速度
+    float angle;                     // 实时更新的角度
+    int hitpoint;                    // CSV读取的生命值
+    float mass;                      // CSV读取的质量
+    int id;                          // 渲染器分配的ID
+    Vector2f* transformed_vertices;  // 实时更新的变换后顶点数组
+    const char* id_name;             // 实体标识名
+    LightController light_controller;// 光效控制器
 } Entity;
 ```
 
@@ -154,10 +179,10 @@ AI基于三种状态实现简单行为：
 ```c
 // include/CustomFSM.h
 typedef enum {
-    STATE_IDLE,        // 空闲状态，保持位置缓慢旋转
-    STATE_ATTACK,      // 攻击状态，接近目标并射击
-    STATE_EVADE        // 规避状态，躲避攻击
-} AIState;
+    FSM_STATE_PATROL,  // 巡逻状态，保持位置缓慢旋转
+    FSM_STATE_ATTACK,  // 攻击状态，接近目标并射击
+    FSM_STATE_EVADE    // 规避状态，躲避攻击
+} FSMState;
 ```
 
 ### 决策逻辑

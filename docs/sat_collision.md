@@ -41,26 +41,24 @@ Vector2f ship_vertices[] = {
 ```
 
 ### 第二步：坐标变换
-飞船在飞、在转，所以顶点位置要实时计算：
+飞船在飞、在转，所以顶点位置要实时计算。实际项目中使用了Polygon_GetTransformedVertices函数：
 
 ```c
-void TransformVertices(Vector2f* local_verts, int count,
-                      Vector2f position, float angle,
-                      Vector2f* result) {
-    for (int i = 0; i < count; i++) {
-        // 1. 旋转
-        float x = local_verts[i].x;
-        float y = local_verts[i].y;
-        float rad = angle * 3.14159f / 180.0f;
-        float cosA = cos(rad);
-        float sinA = sin(rad);
-        
-        result[i].x = x * cosA - y * sinA;
-        result[i].y = x * sinA + y * cosA;
-        
-        // 2. 平移
-        result[i].x += position.x;
-        result[i].y += position.y;
+// src/tool/Polygon.cpp
+void Polygon_GetTransformedVertices(const HitPolygon* polygon, 
+                                   const Vector2f* position, 
+                                   Vector2f image_center_offset, 
+                                   float angle, 
+                                   Vector2f* result) {
+    for (int i = 0; i < polygon->vertex_count; i++) {
+        Vector2f rotated;
+        Vector2f centered_vertex;
+        // 1. 减去图像中心偏移
+        Vector2f_subtract(&polygon->vertices[i], &image_center_offset, &centered_vertex);
+        // 2. 旋转
+        Vector2f_rotate(&centered_vertex, angle, &rotated);
+        // 3. 加上位置
+        Vector2f_add(&rotated, position, &result[i]);
     }
 }
 ```
@@ -99,35 +97,65 @@ bool CheckAxis(Vector2f* vertsA, int countA,
 ```
 
 ### 第四步：检查所有轴
+实际项目中SAT算法实现在Polygon_CollisionSAT函数中：
+
 ```c
-bool SAT_Collision(Vector2f* vertsA, int countA,
-                   Vector2f* vertsB, int countB) {
+// src/tool/Polygon.cpp
+bool Polygon_CollisionSAT(const HitPolygon* polyA, const HitPolygon* polyB,
+                         const Vector2f* vertsA, const Vector2f* vertsB,
+                         Vector2f* collision_point, Vector2f* separation_vector) {
+    float min_overlap = INFINITY;
+    Vector2f smallest_axis = {0, 0};
+    
     // 检查多边形A的所有边
-    for (int i = 0; i < countA; i++) {
-        int j = (i + 1) % countA;
-        Vector2f edge = {
-            vertsA[j].x - vertsA[i].x,
-            vertsA[j].y - vertsA[i].y
-        };
-        Vector2f normal = {-edge.y, edge.x};  // 法线（垂直）
+    for (int i = 0; i < polyA->vertex_count; i++) {
+        Vector2f current = vertsA[i];
+        Vector2f next = vertsA[(i+1) % polyA->vertex_count];
+        Vector2f edge = {next.x - current.x, next.y - current.y};
+        Vector2f axis = {-edge.y, edge.x};  // 法线
+        Vector2f_normalize(&axis);
         
-        if (!CheckAxis(vertsA, countA, vertsB, countB, normal)) {
-            return false;  // 找到分离轴，没碰撞
+        float overlap = check_overlap_on_axis(vertsA, polyA->vertex_count,
+                                             vertsB, polyB->vertex_count, &axis);
+        if (overlap <= 0) {
+            return false;  // 找到分离轴
+        }
+        
+        if (overlap < min_overlap) {
+            min_overlap = overlap;
+            smallest_axis = axis;
         }
     }
     
     // 检查多边形B的所有边
-    for (int i = 0; i < countB; i++) {
-        int j = (i + 1) % countB;
-        Vector2f edge = {
-            vertsB[j].x - vertsB[i].x,
-            vertsB[j].y - vertsB[i].y
-        };
-        Vector2f normal = {-edge.y, edge.x};
+    for (int i = 0; i < polyB->vertex_count; i++) {
+        Vector2f current = vertsB[i];
+        Vector2f next = vertsB[(i+1) % polyB->vertex_count];
+        Vector2f edge = {next.x - current.x, next.y - current.y};
+        Vector2f axis = {-edge.y, edge.x};  // 法线
+        Vector2f_normalize(&axis);
         
-        if (!CheckAxis(vertsA, countA, vertsB, countB, normal)) {
-            return false;  // 找到分离轴，没碰撞
+        float overlap = check_overlap_on_axis(vertsA, polyA->vertex_count,
+                                             vertsB, polyB->vertex_count, &axis);
+        if (overlap <= 0) {
+            return false;  // 找到分离轴
         }
+        
+        if (overlap < min_overlap) {
+            min_overlap = overlap;
+            smallest_axis = axis;
+        }
+    }
+    
+    // 计算分离向量
+    separation_vector->x = smallest_axis.x * min_overlap;
+    separation_vector->y = smallest_axis.y * min_overlap;
+    
+    // 计算碰撞点（简化版）
+    if (collision_point) {
+        // 实际实现中会计算更精确的碰撞点
+        collision_point->x = (vertsA[0].x + vertsB[0].x) * 0.5f;
+        collision_point->y = (vertsA[0].y + vertsB[0].y) * 0.5f;
     }
     
     return true;  // 所有轴都重叠，发生碰撞

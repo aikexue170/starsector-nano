@@ -43,7 +43,7 @@ Torrent,0.8,600,15,1
 my_ship,ship,800,400,180.0,160.0,100.0,100.0
 ```
 
-2. 在 `assets/data/ship/` 创建 `my_ship.json`：
+ 2. 在 `assets/data/ship/` 创建 `my_ship.json`：
 
 ```json
 {
@@ -51,31 +51,11 @@ my_ship,ship,800,400,180.0,160.0,100.0,100.0
     {"x": 0, "y": -50},
     {"x": -40, "y": 40},
     {"x": 40, "y": 40}
-  ],
-  "engines": [
-    {
-      "name": "PRI_engine",
-      "angle": -90,
-      "attachment_point": {"x": 0, "y": 30},
-      "attachment_angle_offset": 0
-    }
-  ],
-  "weapons": [
-    {
-      "name": "Torrent",
-      "angle": 0,
-      "attachment_point": {"x": 20, "y": -20},
-      "offset": {"x": 0, "y": 0}
-    },
-    {
-      "name": "Torrent",
-      "angle": 0,
-      "attachment_point": {"x": -20, "y": -20},
-      "offset": {"x": 0, "y": 0}
-    }
   ]
 }
 ```
+
+注意：实际项目中，引擎和武器的配置不是通过JSON文件，而是在代码中通过ShipAPI_AddEngine和ShipAPI_AddWeapon函数添加。
 
 **说明**：
 - `vertices`：碰撞多边形的顶点，画个三角形把飞船包住就行
@@ -117,18 +97,14 @@ ShipAPI* myShip = ShipPool_GetShip(ship_pool, &rsm, &rdm, "my_ship",
 my_weapon,1.2,800,20,3
 ```
 
-2. 在 `assets/data/weapon/` 创建 `my_weapon.JSON`：
+ 2. 在 `assets/data/weapon/` 创建 `my_weapon.JSON`：
 
 ```json
 {
   "isLazer": false,
   "isBullet": true,
   "isMissile": false,
-  "BulletName": "my_bullet",
-  "OriginalFirePosition": {
-    "x": 0,
-    "y": 0
-  }
+  "BulletName": "my_bullet"
 }
 ```
 
@@ -173,19 +149,9 @@ my_weapon,1.2,800,20,3
 ### 改引擎火焰
 引擎图片在 `assets/graphic/fx/` 文件夹。你可以：
 1. 替换现有的 `PRI_engine.png` 或 `RUI_engine.png`
-2. 或者创建新的引擎图片，然后在飞船JSON里指定：
+2. 或者创建新的引擎图片，然后在代码中通过ShipAPI_AddEngine函数添加时指定引擎类型
 
-```json
-"engines": [
-  {
-    "name": "my_engine",  // 新引擎名字
-    "angle": -90,
-    "attachment_point": {"x": 0, "y": 30}
-  }
-]
-```
-
-记得在 `register.json` 的 `engine` 部分注册。
+记得在 `register.json` 的 `engine` 部分注册新引擎图片。
 
 ### 改爆炸效果
 爆炸图片在 `assets/graphic/fx/`，有很多张：
