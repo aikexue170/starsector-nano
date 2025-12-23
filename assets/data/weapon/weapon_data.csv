@@ -1,0 +1,6 @@
+name,id_name,rotate_acceleration,cooldown,range,image_center_offset_x,image_center_offset_y,isFixed
+#射弹,,,,,,,
+[洪流]星轨,Torrent,0,15,3000,70,254,1
+惩戒,Punishment,5,3,1000,21,32,0
+#激光,,,,,,,
+质子光矛,Proton,0,1,1000,24,36,0

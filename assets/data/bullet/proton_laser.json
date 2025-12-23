@@ -1,0 +1,11 @@
+{
+  "vertices": [
+    {"x": 0, "y": 0},
+    {"x": 0,  "y": 29},
+    {"x": 13, "y": 29},
+    {"x": 13, "y": 0}
+  ],
+  "velocity": 600,
+  "ExplosionType": "EXPLOSION_LASER_HIT",
+  "damage": 1200
+}

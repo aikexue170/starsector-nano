@@ -1,0 +1,62 @@
+{
+  "entity": {
+    "RUI_RingProbe": "assets/graphic/ship/RUI_RingProbe.png",
+    "PRI_TransmissionGate": "assets/graphic/ship/PRI_TransmissionGate.png",
+    "PRI_Torrent": "assets/graphic/ship/PRI_torrent.png",
+
+    "torrent_bullet": "assets/graphic/bullet/torrent_bullet.png",
+    "punishment_bullet": "assets/graphic/bullet/punishment_bullet.png",
+    "proton_laser": "assets/graphic/bullet/proton_laser.png"
+  },
+  "background": {
+    "background1": "assets/graphic/background/background1.jpg"
+  },
+  "engine": {
+    "RUI_engine": "assets/graphic/fx/RUI_engine.png",
+    "PRI_engine": "assets/graphic/fx/PRI_engine.png"
+  },
+  "light": {
+    "PRI_TransmissionGate": "assets/graphic/fx/light/PRI_transmission_gate_light.png",
+    "PRI_Torrent": "assets/graphic/fx/light/PRI_torrent_light.png",
+    "RUI_RingProbe": "assets/graphic/fx/light/RUI_RingProbe.png",
+
+    "torrent_bullet": "assets/graphic/bullet/torrent_bullet.png",
+    "punishment_bullet": "assets/graphic/bullet/punishment_bullet.png",
+    "proton_laser": "assets/graphic/bullet/proton_laser.png",
+
+    "screen_flash": "assets/graphic/fx/white.png"
+  },
+  "weapon": {
+    "Torrent": "assets/graphic/weapons/torrent.png",
+    "Punishment": "assets/graphic/weapons/punishment.png",
+    "Proton": "assets/graphic/weapons/proton_lance.png"
+  },
+  "weapon_glow": {
+    "Torrent": "assets/graphic/weapons/torrent_glow.png",
+    "Punishment": "assets/graphic/weapons/punishment.png",
+    "Proton": "assets/graphic/weapons/proton_lance_glow.png"
+  },
+  "explosion": {
+    "empty": "assets/graphic/fx/empty.png",
+    "screen_empty": "assets/graphic/fx/white_base.png",
+    "flash": "assets/graphic/fx/hit_glow.png",
+    "smoke1": "assets/graphic/fx/explosion1.png",
+    "smoke2": "assets/graphic/fx/explosion2.png",
+    "smoke3": "assets/graphic/fx/explosion3.png",
+    "smoke4": "assets/graphic/fx/explosion4.png",
+    "smoke5": "assets/graphic/fx/explosion5.png",
+    "smoke6": "assets/graphic/fx/explosion6.png",
+    "smoke_heavy1": "assets/graphic/fx/explosion7.png",
+    "smoke_heavy2": "assets/graphic/fx/explosion8.png",
+    "smoke_heavy3": "assets/graphic/fx/explosion9.png",
+    "flash_fire1": "assets/graphic/fx/light/fire1.png",
+    "flash_fire2": "assets/graphic/fx/light/fire2.png",
+    "ship_boom_light": "assets/graphic/fx/light/ship_boom_light.png",
+    "ship_boom_light_flash": "assets/graphic/fx/light/ship_boom_light_flash.png"
+  },
+  "UI": {
+    "PRI_TransmissionGate": "assets/graphic/ship/PRI_TransmissionGate_graph.png",
+    "UI": "assets/graphic/fx/UI.png",
+    "ship_UI": "assets/graphic/fx/ship_UI.png"
+  }
+}

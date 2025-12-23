@@ -1,0 +1,10 @@
+{
+  "isLazer": true,
+  "isBullet": false,
+  "isMissile": false,
+  "BulletName": "proton_laser",
+  "OriginalFirePosition": {
+    "x": 0,
+    "y": 0
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "vertices": [
+    {"x": 155, "y": 145},
+    {"x": 61,  "y": 404},
+    {"x": 57, "y": 466},
+    {"x": 87, "y": 560},
+    {"x": 243, "y": 559},
+    {"x": 271, "y": 465},
+    {"x": 263, "y": 400},
+    {"x": 178, "y": 153}
+  ],
+  "engines": [
+    {
+      "name": "PRI_engine",
+      "angle": -90,
+      "attachment_point": {"x": 0, "y": 220},
+      "attachment_angle_offset": 0
+    },
+    {
+      "name": "PRI_engine",
+      "angle": -70,
+      "attachment_point": {"x": -50, "y": 210},
+      "attachment_angle_offset": -25
+    },
+    {
+      "name": "PRI_engine",
+      "angle": -110,
+      "attachment_point": {"x": 50, "y": 210},
+      "attachment_angle_offset": 25
+    }
+  ],
+  "weapons": [
+    {
+      "name": "Proton",
+      "angle": -180,
+      "attachment_point": {"x": 163, "y": 250},
+      "offset": {"x": 0, "y": 0}
+    },
+    {
+      "name": "Proton",
+      "angle": -180,
+      "attachment_point": {"x": 145, "y": 325},
+      "offset": {"x": 0, "y": 0}
+    },
+    {
+      "name": "Proton",
+      "angle": -180,
+      "attachment_point": {"x": 182, "y": 325},
+      "offset": {"x": 0, "y": 0}
+    }
+  ]
+}

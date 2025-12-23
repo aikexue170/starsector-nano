@@ -1,0 +1,48 @@
+{
+  "vertices": [
+    {"x": 155, "y": 60},
+    {"x": 40,  "y": 480},
+    {"x": 160, "y": 690},
+    {"x": 280, "y": 480}
+  ],
+  "engines": [
+    {
+      "name": "RUI_engine",
+      "angle": -90,
+      "attachment_point": {"x": -5, "y": 210},
+      "attachment_angle_offset": 0
+    }
+  ],
+  "weapons": [
+    {
+      "name": "Punishment",
+      "angle": -180,
+      "attachment_point": {"x": 171, "y": 306},
+      "offset": {"x": 0, "y": 0}
+    },
+    {
+      "name": "Punishment",
+      "angle": -180,
+      "attachment_point": {"x": 134, "y": 381},
+      "offset": {"x": 0, "y": 0}
+    },
+    {
+      "name": "Punishment",
+      "angle": -180,
+      "attachment_point": {"x": 187, "y": 390},
+      "offset": {"x": 0, "y": 0}
+    },
+    {
+      "name": "Punishment",
+      "angle": -180,
+      "attachment_point": {"x": 198, "y": 418},
+      "offset": {"x": 0, "y": 0}
+    },
+    {
+      "name": "Punishment",
+      "angle": -180,
+      "attachment_point": {"x": 156, "y": 442},
+      "offset": {"x": 0, "y": 0}
+    }
+  ]
+}

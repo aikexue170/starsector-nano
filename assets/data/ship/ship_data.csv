@@ -1,0 +1,19 @@
+name,id_name,designation,mass,hitpoint,acceleration,rotational_acceleration,image_center_offset_x,image_center_offset_y
+#PRI战舰,,,,,,,,
+脊峰,,攻击卫星,,,,,,
+传输门,PRI_TransmissionGate,采矿母舰,1000,200000,50,10,162,360
+洪流,PRI_Torrent,火力卫星,200,50000,25,5,70,254
+制造门,,生产母舰,,,,,,
+执行门,,执法母舰,,,,,,
+穿云,,探针,,,,,,
+存储门,,中枢母港,,,,,,
+,,,,,,,,
+#RUI战舰,,,,,,,,
+终末之环,,神秘 母舰,,,,,,
+超环,,神秘 战列舰,,,,,,
+环状寄生物,,神秘 长程打击平台,,,,,,
+环探针,RUI_RingProbe,神秘 战列舰,1000,200000,50,10,162,360
+,,,,,,,,
+,,,,,,,,
+#战机,,,,,,,,
+脊峰打击群,,,,,,,,

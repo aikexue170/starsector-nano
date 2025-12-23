@@ -1,0 +1,5 @@
+name,id_name,designation,mass,hitpoint,acceleration,rotational_acceleration,image_center_offset_x,image_center_offset_y
+#实弹,,,,,,,,
+洪流炮弹,torrent_bullet,装载了高密度电浆的聚能炮弹,50,200,0,0,6,14
+惩戒炮弹,punishment_bullet,生物弹药,5,20,0,0,9,22
+质子束,proton_laser,高密度质子流,0,1,0,0,6,14

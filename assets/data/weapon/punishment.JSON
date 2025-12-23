@@ -1,0 +1,10 @@
+{
+  "isLazer": false,
+  "isBullet": true,
+  "isMissile": false,
+  "BulletName": "punishment_bullet",
+  "OriginalFirePosition": {
+    "x": 0,
+    "y": 20
+  }
+}

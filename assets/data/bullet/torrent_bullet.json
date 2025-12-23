@@ -1,0 +1,11 @@
+{
+  "vertices": [
+    {"x": 0, "y": 0},
+    {"x": 0,  "y": 29},
+    {"x": 13, "y": 29},
+    {"x": 13, "y": 0}
+  ],
+  "velocity": 1500,
+  "ExplosionType": "EXPLOSION_HEAVY_ONHIT",
+  "damage": 30000
+}

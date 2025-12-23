@@ -1,0 +1,31 @@
+{
+  "vertices": [
+    {"x": 73, "y": 144},
+    {"x": 60,  "y": 144},
+    {"x": 29, "y": 220},
+    {"x": 19, "y": 289},
+    {"x": 6, "y": 391},
+    {"x": 9,  "y": 444},
+    {"x": 49, "y": 480},
+    {"x": 104, "y": 475},
+    {"x": 127, "y": 430},
+    {"x": 126,  "y": 378},
+    {"x": 81, "y": 168}
+  ],
+  "engines": [
+    {
+      "name": "PRI_engine",
+      "angle": -90,
+      "attachment_point": {"x":0, "y": 246},
+      "attachment_angle_offset": 0
+    }
+  ],
+  "weapons": [
+    {
+      "name": "Torrent",
+      "angle": 0,
+      "attachment_point": {"x": 66, "y": 250},
+      "offset": {"x": 0, "y": 0}
+    }
+  ]
+}
