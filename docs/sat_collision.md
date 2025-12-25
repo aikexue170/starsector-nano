@@ -53,46 +53,39 @@ void Polygon_GetTransformedVertices(const HitPolygon* polygon,
     for (int i = 0; i < polygon->vertex_count; i++) {
         Vector2f rotated;
         Vector2f centered_vertex;
-        // 1. 减去图像中心偏移
         Vector2f_subtract(&polygon->vertices[i], &image_center_offset, &centered_vertex);
-        // 2. 旋转
         Vector2f_rotate(&centered_vertex, angle, &rotated);
-        // 3. 加上位置
         Vector2f_add(&rotated, position, &result[i]);
     }
 }
 ```
 
 ### 第三步：检查分离轴
-对每个多边形的每条边，检查它的法线方向：
+对每个多边形的每条边，检查它的法线方向。实际代码使用内部静态函数：
 
 ```c
-bool CheckAxis(Vector2f* vertsA, int countA,
-               Vector2f* vertsB, int countB,
-               Vector2f axis) {
-    // 1. 归一化轴
-    float length = sqrt(axis.x*axis.x + axis.y*axis.y);
-    axis.x /= length;
-    axis.y /= length;
-    
-    // 2. 投影多边形A
-    float minA = INFINITY, maxA = -INFINITY;
-    for (int i = 0; i < countA; i++) {
-        float proj = vertsA[i].x * axis.x + vertsA[i].y * axis.y;
-        minA = fmin(minA, proj);
-        maxA = fmax(maxA, proj);
+// src/tool/Polygon.cpp (内部静态函数)
+static void get_axes(const Vector2f* vertices, int count, Vector2f* axes) {
+    for (int i = 0; i < count; i++) {
+        Vector2f current = vertices[i];
+        Vector2f next = vertices[(i+1)%count];
+        Vector2f edge = {next.x - current.x, next.y - current.y};
+        Vector2f normal = {-edge.y, edge.x};
+        Vector2f_normalize(&normal);
+        axes[i] = normal;
     }
-    
-    // 3. 投影多边形B
-    float minB = INFINITY, maxB = -INFINITY;
-    for (int i = 0; i < countB; i++) {
-        float proj = vertsB[i].x * axis.x + vertsB[i].y * axis.y;
-        minB = fmin(minB, proj);
-        maxB = fmax(maxB, proj);
+}
+
+static void project_polygon(const Vector2f* vertices, int count,
+                            const Vector2f* axis,
+                            float* min, float* max) {
+    *min = INFINITY;
+    *max = -INFINITY;
+    for (int i = 0; i < count; i++) {
+        float proj = Vector2f_dot(&vertices[i], axis);
+        *min = fminf(*min, proj);
+        *max = fmaxf(*max, proj);
     }
-    
-    // 4. 检查是否重叠
-    return (maxA >= minB) && (maxB >= minA);
 }
 ```
 
@@ -101,64 +94,71 @@ bool CheckAxis(Vector2f* vertsA, int countA,
 
 ```c
 // src/tool/Polygon.cpp
-bool Polygon_CollisionSAT(const HitPolygon* polyA, const HitPolygon* polyB,
-                         const Vector2f* vertsA, const Vector2f* vertsB,
+bool Polygon_CollisionSAT(const HitPolygon* a, const HitPolygon* b, 
+                         Vector2f* a_verts, Vector2f* b_verts,
                          Vector2f* collision_point, Vector2f* separation_vector) {
+    const int a_count = a->vertex_count;
+    const int b_count = b->vertex_count;
+
+    // 生成分离轴
+    Vector2f axes[64];
+    int axis_count = 0;
+
+    // 获取多边形A的轴
+    get_axes(a_verts, a_count, axes);
+    axis_count += a_count;
+
+    // 获取多边形B的轴
+    get_axes(b_verts, b_count, axes + axis_count);
+    axis_count += b_count;
+
     float min_overlap = INFINITY;
-    Vector2f smallest_axis = {0, 0};
-    
-    // 检查多边形A的所有边
-    for (int i = 0; i < polyA->vertex_count; i++) {
-        Vector2f current = vertsA[i];
-        Vector2f next = vertsA[(i+1) % polyA->vertex_count];
-        Vector2f edge = {next.x - current.x, next.y - current.y};
-        Vector2f axis = {-edge.y, edge.x};  // 法线
+    Vector2f min_axis = {0};
+    Vector2f centroid_a = calculate_centroid(a_verts, a_count);
+    Vector2f centroid_b = calculate_centroid(b_verts, b_count);
+
+    // 检测所有分离轴
+    for (int i = 0; i < axis_count; i++) {
+        Vector2f axis = axes[i];
         Vector2f_normalize(&axis);
-        
-        float overlap = check_overlap_on_axis(vertsA, polyA->vertex_count,
-                                             vertsB, polyB->vertex_count, &axis);
-        if (overlap <= 0) {
-            return false;  // 找到分离轴
+
+        // 投影计算
+        float a_min, a_max, b_min, b_max;
+        project_polygon(a_verts, a_count, &axis, &a_min, &a_max);
+        project_polygon(b_verts, b_count, &axis, &b_min, &b_max);
+
+        // 分离轴检测
+        if (a_max < b_min || b_max < a_min) {
+            return false;
         }
-        
+
+        // 计算重叠量
+        float overlap = fminf(a_max - b_min, b_max - a_min);
         if (overlap < min_overlap) {
             min_overlap = overlap;
-            smallest_axis = axis;
+            min_axis = axis;
+
+            // 确定分离方向
+            Vector2f delta_centroid = {centroid_b.x - centroid_a.x, centroid_b.y - centroid_a.y};
+            if (Vector2f_dot(&delta_centroid, &axis) < 0) {
+                min_axis.x = -min_axis.x;
+                min_axis.y = -min_axis.y;
+            }
         }
     }
-    
-    // 检查多边形B的所有边
-    for (int i = 0; i < polyB->vertex_count; i++) {
-        Vector2f current = vertsB[i];
-        Vector2f next = vertsB[(i+1) % polyB->vertex_count];
-        Vector2f edge = {next.x - current.x, next.y - current.y};
-        Vector2f axis = {-edge.y, edge.x};  // 法线
-        Vector2f_normalize(&axis);
-        
-        float overlap = check_overlap_on_axis(vertsA, polyA->vertex_count,
-                                             vertsB, polyB->vertex_count, &axis);
-        if (overlap <= 0) {
-            return false;  // 找到分离轴
-        }
-        
-        if (overlap < min_overlap) {
-            min_overlap = overlap;
-            smallest_axis = axis;
-        }
-    }
-    
-    // 计算分离向量
-    separation_vector->x = smallest_axis.x * min_overlap;
-    separation_vector->y = smallest_axis.y * min_overlap;
-    
-    // 计算碰撞点（简化版）
+
+    // 计算碰撞结果
     if (collision_point) {
-        // 实际实现中会计算更精确的碰撞点
-        collision_point->x = (vertsA[0].x + vertsB[0].x) * 0.5f;
-        collision_point->y = (vertsA[0].y + vertsB[0].y) * 0.5f;
+        collision_point->x = (centroid_a.x + centroid_b.x) * 0.5f;
+        collision_point->y = (centroid_a.y + centroid_b.y) * 0.5f;
     }
-    
-    return true;  // 所有轴都重叠，发生碰撞
+
+    if (separation_vector) {
+        separation_vector->x = min_axis.x * min_overlap;
+        separation_vector->y = min_axis.y * min_overlap;
+    }
+
+    return true;
 }
 ```
 
@@ -198,16 +198,13 @@ HitPolygon* LoadPolygon(const char* filename) {
 ### 3. 每帧检测
 ```c
 bool CheckCollision(Entity* ship1, Entity* ship2) {
-    // 1. 获取变换后的顶点
-    Vector2f verts1[10], verts2[10];
-    TransformVertices(ship1->polygon->vertices, ship1->polygon->vertex_count,
-                     ship1->position, ship1->angle, verts1);
-    TransformVertices(ship2->polygon->vertices, ship2->polygon->vertex_count,
-                     ship2->position, ship2->angle, verts2);
-    
-    // 2. SAT检测
-    return SAT_Collision(verts1, ship1->polygon->vertex_count,
-                        verts2, ship2->polygon->vertex_count);
+    // SAT检测
+    Vector2f collision_point, separation_vector;
+    return Polygon_CollisionSAT(
+        ship1->polygon, ship2->polygon,
+        ship1->transformed_vertices, ship2->transformed_vertices,
+        &collision_point, &separation_vector
+    );
 }
 ```
 

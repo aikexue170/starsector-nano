@@ -6,8 +6,8 @@
 打开 `assets/data/ship/ship_data.csv`，找到你想改的飞船：
 
 ```csv
-name,type,mass,hitpoint,acceleration,rotational_acceleration,image_center_x,image_center_y
-PRI_TransmissionGate,ship,1000,500,200.0,180.0,162.0,356.0
+name,id_name,designation,mass,hitpoint,acceleration,rotational_acceleration,image_center_offset_x,image_center_offset_y
+传输门,PRI_TransmissionGate,采矿母舰,1000,200000,50,10,162,360
 ```
 
 - `acceleration`：加速度，越大加速越快
@@ -16,6 +16,19 @@ PRI_TransmissionGate,ship,1000,500,200.0,180.0,162.0,356.0
 - `hitpoint`：生命值
 
 改完保存，重新运行游戏就能看到效果。
+
+### 改武器伤害
+打开 `assets/data/weapon/weapon_data.csv`：
+
+```csv
+name,id_name,rotate_acceleration,cooldown,range,image_center_offset_x,image_center_offset_y,isFixed
+[洪流]星轨,Torrent,0,15,3000,70,254,1
+```
+
+- `rotate_acceleration`：武器旋转加速度
+- `cooldown`：冷却时间，越小射速越快
+- `range`：射程
+- `isFixed`：武器是否固定方向（1为固定，0为可旋转）
 
 ### 改武器伤害
 打开 `assets/data/weapon/weapon_data.csv`：
@@ -40,7 +53,7 @@ Torrent,0.8,600,15,1
 1. 在 `assets/data/ship/ship_data.csv` 最后加一行：
 
 ```csv
-my_ship,ship,800,400,180.0,160.0,100.0,100.0
+我的飞船,my_ship,我的战舰,800,400,180.0,160.0,100.0,100.0
 ```
 
  2. 在 `assets/data/ship/` 创建 `my_ship.json`：
@@ -48,19 +61,34 @@ my_ship,ship,800,400,180.0,160.0,100.0,100.0
 ```json
 {
   "vertices": [
-    {"x": 0, "y": -50},
-    {"x": -40, "y": 40},
-    {"x": 40, "y": 40}
+    {"x": 50, "y": 50},
+    {"x": 50, "y": 150},
+    {"x": 150, "y": 100}
+  ],
+  "engines": [
+    {
+      "name": "PRI_engine",
+      "angle": -90,
+      "attachment_point": {"x": 100, "y": 120},
+      "attachment_angle_offset": 0
+    }
+  ],
+  "weapons": [
+    {
+      "name": "Torrent",
+      "angle": -180,
+      "attachment_point": {"x": 100, "y": 80},
+      "offset": {"x": 0, "y": 0}
+    }
   ]
 }
 ```
-
-注意：实际项目中，引擎和武器的配置不是通过JSON文件，而是在代码中通过ShipAPI_AddEngine和ShipAPI_AddWeapon函数添加。
 
 **说明**：
 - `vertices`：碰撞多边形的顶点，画个三角形把飞船包住就行
 - `engines`：引擎位置，`attachment_point`是相对于飞船中心的坐标
 - `weapons`：武器位置，可以装多个
+- 引擎和武器配置通过JSON文件添加，不是在代码中
 
 ### 第三步：注册飞船
 打开 `assets/data/register.json`，在 `entity` 部分添加：
@@ -94,7 +122,7 @@ ShipAPI* myShip = ShipPool_GetShip(ship_pool, &rsm, &rdm, "my_ship",
 1. 在 `assets/data/weapon/weapon_data.csv` 添加：
 
 ```csv
-my_weapon,1.2,800,20,3
+我的武器,my_weapon,新武器描述,1.2,800,50,40,0
 ```
 
  2. 在 `assets/data/weapon/` 创建 `my_weapon.JSON`：
@@ -104,7 +132,11 @@ my_weapon,1.2,800,20,3
   "isLazer": false,
   "isBullet": true,
   "isMissile": false,
-  "BulletName": "my_bullet"
+  "BulletName": "my_bullet",
+  "OriginalFirePosition": {
+    "x": 0,
+    "y": -130
+  }
 }
 ```
 
@@ -112,10 +144,15 @@ my_weapon,1.2,800,20,3
 
 ```json
 {
-  "damage": 50,
-  "speed": 600,
-  "lifetime": 2.0,
-  "collision_radius": 8
+  "name": "my_bullet",
+  "id_name": "my_bullet",
+  "designation": "我的子弹",
+  "mass": 5,
+  "hitpoint": 10,
+  "acceleration": 0,
+  "rotational_acceleration": 0,
+  "image_center_offset_x": 5,
+  "image_center_offset_y": 10
 }
 ```
 
@@ -138,8 +175,9 @@ my_weapon,1.2,800,20,3
 "weapons": [
   {
     "name": "my_weapon",  // 改成你的新武器
-    "angle": 0,
-    "attachment_point": {"x": 20, "y": -20}
+    "angle": -180,
+    "attachment_point": {"x": 100, "y": 80},
+    "offset": {"x": 0, "y": 0}
   }
 ]
 ```

@@ -9,67 +9,41 @@ EasyX是一个为C/C++设计的简单图形库，特点是简单易用，适合�
 ### 引擎数据结构
 ```c
 // include/Engine.h
-typedef struct Engine {
-    Vector2f position;           // 世界坐标位置
-    float angle;                 // 角度
-    IMAGE image;                 // 原始火焰图片
-    IMAGE image_after_render;    // 处理后的图片
-    DistortionEffect_t effect;   // 扭曲特效
-    Timer timer;                 // 计时器
+typedef struct Engine{
+    Vector2f position;
+    Vector2f offset_position;
+    float angle;
+    float offset_angle;
+    IMAGE image;
+    IMAGE image_after_render;
+    IMAGE image_final_render;
+    DistortionEffect_t effect;
+    Timer timer;
+    int id = 0;
+    EngineController controller;
 } Engine;
+
+typedef struct EngineController{
+    float zoom_x;
+    float zoom_y;
+} EngineController;
 ```
 
 ### 光效合成
-实体光效通过Entity_Light函数实现：
+实体光效通过Entity_Light函数实现。光效图像通过`light_controller`结构体管理：
 
 ```c
-// src/Entity.cpp
-void Entity_Light(Entity* entity) {
-    // 获取图像缓冲区
-    DWORD* img_buffer = GetImageBuffer(&entity->image);
-    DWORD* light_buffer = GetImageBuffer(&entity->light_controller.light_image);
-    int width = entity->image.getwidth();
-    int height = entity->image.getheight();
-    
-    // 创建带光效的图像（如果还没有）
-    if (entity->image_with_light.getwidth() == 0) {
-        entity->image_with_light = entity->image;
-    }
-    
-    DWORD* result_buffer = GetImageBuffer(&entity->image_with_light);
-    
-    // 混合基础图像和光效图像
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int index = y * width + x;
-            COLORREF base_color = img_buffer[index];
-            COLORREF light_color = light_buffer[index];
-            
-            // 提取RGB分量
-            int base_r = GetRValue(base_color);
-            int base_g = GetGValue(base_color);
-            int base_b = GetBValue(base_color);
-            
-            int light_r = GetRValue(light_color);
-            int light_g = GetGValue(light_color);
-            int light_b = GetBValue(light_color);
-            
-            // 根据强度混合
-            float intensity = entity->light_controller.intensity;
-            int result_r = base_r + (int)(light_r * intensity);
-            int result_g = base_g + (int)(light_g * intensity);
-            int result_b = base_b + (int)(light_b * intensity);
-            
-            // 限制在0-255范围
-            result_r = result_r > 255 ? 255 : result_r;
-            result_g = result_g > 255 ? 255 : result_g;
-            result_b = result_b > 255 ? 255 : result_b;
-            
-            result_buffer[index] = RGB(result_r, result_g, result_b);
-        }
-    }
-}
+// include/Entity.h
+typedef struct LightController{
+    IMAGE light_image;
+    IMAGE light_image_after_adjust;
+    float intensity;// 0 到 1
+}LightController;
 ```
+
+Entity结构体包含`light_controller`成员，用于存储光效图像和强度参数。光效合成过程将基础图像与光效图像混合，根据强度参数调整光效效果。
+
+注意：具体的光效混合实现代码在`src/Entity.cpp`中的`Entity_Light`函数里，使用EasyX的图像缓冲区操作实现像素级混合。
 
 ## 💥 爆炸效果系统
 爆炸效果使用对象池和多线程更新。
@@ -105,16 +79,24 @@ void ExplosionPool_UpdateMT(ExplosionPool* pool, float deltaTime) {
 
 ```c
 // include/SequencedExplosion.h
-typedef struct ExplosionSequence {
-    IMAGE frames[MAX_EXPLOSION_FRAMES];
-    int frameCount;
-    int currentFrame;
-    float frameDuration;
-    float timer;
-    bool isActive;
-    Vector2f position;
-    float scale;
+typedef struct {
+    ExplosionSequenceConfig config;
+    float timer;           // 计时器，控制爆炸间隔
+    int remainingExplosions; // 剩余爆炸次数
+    bool isActive;         // 是否正在播放
 } ExplosionSequence;
+
+typedef struct {
+    Vector2f center;       // 爆炸中心点
+    float radius;          // 爆炸随机范围半径
+    int minExplosions;     // 最小爆炸次数
+    int maxExplosions;     // 最大爆炸次数
+    float minDelay;        // 两次爆炸间最小延迟（秒）
+    float maxDelay;        // 两次爆炸间最大延迟（秒）
+    float duration;        // 单次爆炸持续时间
+    ExplosionType type;    // 爆炸类型
+    bool isLooping;        // 是否循环播放
+} ExplosionSequenceConfig;
 ```
 
 ## 🎨 图像处理效果

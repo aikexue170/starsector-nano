@@ -241,8 +241,8 @@ void Entity_Create_FromCSV(
             token = strtok(NULL, ",\n");
         }
 
-        // 检查列数并匹配id_name
-        if (column_count >= 9 && strcmp(columns[1], id_name) == 0) {
+        // 检查列数并匹配id_name（注意：实际CSV有8列，索引0-7）
+        if (column_count >= 8 && strcmp(columns[1], id_name) == 0) {
             mass = atoi(columns[3]);
             hitpoint = atoi(columns[4]);
             acceleration = (float)atof(columns[5]);
@@ -264,28 +264,30 @@ void Entity_Create_FromCSV(
     entity->position = position;
     entity->velocity = velocity;
     entity->angle = angle;
-    entity->rotational_velocity = 0.0f; // 初始角速度设为0
-    entity->id = -1; // 等待渲染器分配
+    entity->rotational_velocity = 0.0f;
+    entity->id = -1;
     ResourceManager_GetIMAGE(rm, &entity->image, "entity", id_name);
     entity->id_name = id_name;
     entity->light_controller.intensity = 0.5;
     ResourceManager_GetIMAGE(rm, &entity->light_controller.light_image, "light", id_name);
-    
+
     // 填充CSV数据
     entity->mass = mass;
     entity->hitpoint = hitpoint;
     entity->acceleration = acceleration;
     entity->rotational_acceleration = rotational_acceleration;
     entity->image_center_offset = image_center_offset;
-    
+
     // 计算转动惯量
     float width = image_center_offset.x*2;
     float height = image_center_offset.y*2;
     entity->moment_of_inertia = entity->mass * (width*width + height*height) / 12.0f;
-    
+
     // 初始化变换后的顶点
     if (polygon && polygon->vertex_count > 0) {
-        entity->transformed_vertices = (Vector2f*)malloc(polygon->vertex_count * sizeof(Vector2f));
+        entity->transformed_vertices = (Vector2f*)malloc(
+                polygon->vertex_count * sizeof(Vector2f)
+        );
         if (!entity->transformed_vertices) {
             fprintf(stderr, "Error: Failed to allocate transformed vertices\n");
         }

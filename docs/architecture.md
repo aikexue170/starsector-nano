@@ -82,9 +82,9 @@ while(!game_exit){
 
 ```csv
 # assets/data/ship/ship_data.csv
-name,type,mass,hitpoint,acceleration,rotational_acceleration,image_center_x,image_center_y
-PRI_TransmissionGate,ship,1000,500,200.0,180.0,162.0,356.0
-RUI_RingProbe,ship,800,400,220.0,200.0,150.0,150.0
+name,id_name,designation,mass,hitpoint,acceleration,rotational_acceleration,image_center_offset_x,image_center_offset_y
+传输门,PRI_TransmissionGate,采矿母舰,1000,200000,50,10,162,360
+环探针,RUI_RingProbe,神秘 战列舰,1000,200000,50,10,162,360
 ```
 
 ### 碰撞形状配置
@@ -94,9 +94,30 @@ RUI_RingProbe,ship,800,400,220.0,200.0,150.0,150.0
 // assets/data/ship/PRI_TransmissionGate.json
 {
   "vertices": [
-    {"x": 0, "y": -50},
-    {"x": -40, "y": 40},
-    {"x": 40, "y": 40}
+    {"x": 155, "y": 145},
+    {"x": 61, "y": 404},
+    {"x": 57, "y": 466},
+    {"x": 87, "y": 560},
+    {"x": 243, "y": 559},
+    {"x": 271, "y": 465},
+    {"x": 263, "y": 400},
+    {"x": 178, "y": 153}
+  ],
+  "engines": [
+    {
+      "name": "PRI_engine",
+      "angle": -90,
+      "attachment_point": {"x": 0, "y": 220},
+      "attachment_angle_offset": 0
+    }
+  ],
+  "weapons": [
+    {
+      "name": "Proton",
+      "angle": -180,
+      "attachment_point": {"x": 163, "y": 250},
+      "offset": {"x": 0, "y": 0}
+    }
   ]
 }
 ```
